@@ -1,0 +1,191 @@
+﻿@model Casanueva.Models.AddPropertyViewModel
+<script src="~/Scripts/casanueva.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        cargarSelect('#ddlAmbientes', 10);
+        cargarSelect('#ddlSanitarios', 10);
+    });
+
+    $(function () {
+        $("#btnSearchProperty").click(function () {
+            searchPropFromIndex();
+
+            var offset = 20; //Offset of 20px
+            $('html, body').animate({
+                scrollTop: $("#PropertiesListSectionIndex").offset().top + offset
+            }, 2000);
+        });
+    });
+</script>
+<div class="slider-area">
+    <div class="slider">
+        <div id="bg-slider" class="owl-carousel owl-theme">
+
+            <div class="item"><img src="../images/slide1/slider-image-1.jpg" alt="GTA V"></div>
+            <div class="item"><img src="../images/slide1/slider-image-2.jpg" alt="The Last of us"></div>
+            <div class="item"><img src="../images/slide1/slider-image-4.jpg" alt="GTA V"></div>
+
+        </div>
+    </div>
+    <div class="slider-content">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 col-sm-12">
+                <h2>Buscar propiedad nunca fue tan fácil!</h2>
+                <p>Estamos dedicados a la comercialización  de inmuebles, búsquedas personalizadas, Administración de alquileres, y asesoramiento personal, acompañando a nuestros clientes hasta la realización con éxito de sus objetivos propuestos.</p>
+                <div class="search-form wow pulse" data-wow-delay="0.8s">
+
+                        <div class="row">
+                            <div class="col-xs-centered col-md-1">
+                                <button class="btn toggle-btn" type="button"><i class="fa fa-bars"></i></button>
+                            </div>
+                            <!-- End of  -->
+                            <div class="col-xs-centered col-md-4">
+                                <input id="SearchString" name="SearchString" type="text" class="form-control" placeholder="Palabras claves...">
+                            </div>
+                            <!-- End of  -->
+                            <div class="col-xs-centered col-md-3">
+                                @Html.DropDownListFor(m => m.CiudadSeleccionada, Model.Ciudades, htmlAttributes: new { @class = "selectpicker", id = "ddlBarrio" })
+                            </div>
+                            <!-- End of  -->
+                            <div class="col-xs-centered col-md-3">
+                                @Html.DropDownListFor(m => m.TipoOperacionSeleccionado, Model.TiposOperacion, htmlAttributes: new { @class = "selectpicker", id = "ddlTipoAviso" })
+                            </div>
+                            <!-- End of  -->
+
+                            <div class="col-xs-centered col-md-3">
+                                <select id="ddlSanitarios" name="ddlSanitarios" class="selectpicker show-tick form-control" title="Baños" data-live-search="true" data-live-search-style="begins"></select>
+                            </div>
+                            <!-- End of  -->
+
+                            <div class="col-xs-centered col-md-3">
+                                <select id="ddlAmbientes" name="ddlAmbientes" class="selectpicker show-tick form-control" title="Ambientes" data-live-search="true" data-live-search-style="begins"></select>
+                            </div>
+                            <!-- End of  -->
+                            <div class="col-xs-centered col-md-1">
+                                <button id="btnSearchProperty" class="btn search-btn" type="submit"><i class="fa fa-search"></i></button>
+                            </div>
+                            <!-- End of  -->
+
+                        </div>
+
+                        <div style="display: none;" class="search-toggle">
+
+                            <div class="row">
+                                <div class="col-xs-centered col-md-4">
+                                    <label><b>Tipo De Moneda:</b></label>
+                                    @Html.DropDownListFor(m => m.MonedaSeleccionada, Model.Monedas, htmlAttributes: new { @class = "selectpicker", id = "ddlTipoMoneda" })
+                                </div>
+                                <div class="col-xs-centered col-md-4">
+                                    <label for="price-range"><b>Min. Precio [$]:</b></label>
+                                    <input type="number" id="txtPrecioMin" value="0" class="form-control">
+                                </div>
+                                <div class="col-xs-centered col-md-4">
+                                    <label for="price-range"><b>Máx. Precio [$]:</b></label>
+                                    <input type="number" id="txtPrecioMax" value="0" class="form-control">
+                                </div>
+                                <div class="col-xs-centered col-md-4">
+                                    <label for="property-geo"><b>M<sup>2</sup> Cubiertos (Mínimo):</b></label>
+                                    <input type="number" id="txtMetrosCubiertosMax" value="0" class="form-control" placeholder="Ingrese Monto..." min="0">
+                                </div>
+                            </div>
+
+                            <br>
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="conGarage" type="checkbox"> Garage
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- End of  -->
+
+                                <div class="col-xs-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="conAptoProf" type="checkbox"> Apto Prof.
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- End of  -->
+
+                                <div class="col-xs-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="conAgua" type="checkbox"> Agua
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- End of  -->
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-xs-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="conLuz" type="checkbox"> Luz
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- End of  -->
+
+                                <div class="col-xs-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="conGas" type="checkbox"> Gas
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- End of  -->
+
+                                <div class="col-xs-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="conInternet" type="checkbox"> Internet
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- End of  -->
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-xs-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="conSeguridadPriv" type="checkbox"> Seg. Priv.
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- End of  -->
+
+                                <div class="col-xs-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="conPorteroElectrico" type="checkbox"> Portero Elec.
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- End of  -->
+
+                                <div class="col-xs-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="conAireAcondicionado" type="checkbox"> A/A
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- End of  -->
+                                <br>
+                                <hr>
+                            </div>
+
+                            <button id="btnSearchProperty" class="btn search-btn prop-btn-search" type="submit"><i class="fa fa-search"></i></button>
+                        </div>                 
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

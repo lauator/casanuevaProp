@@ -1,0 +1,98 @@
+﻿@using Casanueva.Models;
+@using Casanueva.Constants;
+@using Casanueva.Helpers;
+
+@model Propiedades
+@{
+    var sTipoAviso = string.Empty;
+    var sEstadoAviso = string.Empty;
+    var sSimboloMoneda = (Model.IdMoneda.Equals(1)) ? Monedas.Peso : Monedas.Dolar;
+    var sMetrosCubiertos = (string.IsNullOrEmpty(Model.MetrosCubiertos.ToString())) ? TextosVarios.NoInfo : Model.MetrosCubiertos.ToString();
+    var colorTag = string.Empty;
+
+    switch (Model.IdTipoAviso)
+    {
+        case 1:
+            sTipoAviso = TipoOperacion.Todos;
+            break;
+        case 2:
+            sTipoAviso = TipoOperacion.Venta;
+            break;
+        case 3:
+            sTipoAviso = TipoOperacion.Alquiler;
+            break;
+    }
+    switch(Model.IdEstadoAviso)
+    {
+        case 1:
+            sEstadoAviso = EstadoAiso.Activo;
+            colorTag = "#00CC00";
+            break;
+        case 2:
+            sEstadoAviso = EstadoAiso.Suspendido;
+            colorTag = "#CCCC00";
+            break;
+        case 3:
+            sEstadoAviso = EstadoAiso.Baja;
+            colorTag = "#F05050";
+            break;
+    }
+    <div class="col-sm-6 col-md-4 p0">
+        <div class="box-two proerty-item">
+            <div class="item-thumb">
+                <span class="properties-status-tag" style="background-color:@colorTag">@sEstadoAviso</span>
+                @{
+                    if (Model.EsDestacado == true)
+                    {
+                        <div class="property-label property-featured"><p class="label-item"> <span class="property-label-bg">@TextosVarios.Destacado<span class="property-arrow"></span></span></p></div>
+                    }
+                    if (Model.Imagenes != null)
+                    {
+                        if (Model.Imagenes.Any(i => i.EsPrincipal == true))
+                        {
+                            @Html.ImageActionLink(Url.Content(Model.Imagenes.Where(i => i.EsPrincipal == true).FirstOrDefault().ServerPath), "", "Index", "PropertyDetail", new { idPropiedad = Model.IdPropiedad }, null, null)
+                        }
+                        else
+                        {
+                            @Html.ImageActionLink(Url.Content("~/images/image_not_found.jpg"), "", "Index", "PropertyDetail", new { idPropiedad = Model.IdPropiedad }, null, null)
+                        }
+                    }
+                }
+            </div>
+
+            <div class="item-entry overflow">
+                <h5><a href="@Url.Action("Index", "PropertyDetail", new { idPropiedad = Model.IdPropiedad })"> @sTipoAviso | @Model.Titulo </a></h5>
+                <div class="dot-hr"></div>
+                <span class="pull-left"><b>M<sup>2</sup> Cubiertos: </b> @sMetrosCubiertos</span>
+                <span class="proerty-price pull-right"> @sSimboloMoneda @Model.Precio.ToString(Monedas.Formato) </span>
+                <p style="display: none;" class="item-p">@Model.Comentarios</p>
+                <div class="property-icon">
+                    <img src="../images/icon/bed.png">(@Model.CantidadDormitorios) |
+                    <img src="../images/icon/shawer.png">(@Model.CantidadSanitarios) |
+                    <img src="../images/icon/cars.png">(@Model.CantidadCocheras)
+                
+                    <!-- ADMINISTRACION DE LA PROPIEDAD -->
+                    <div class="dealer-action pull-right">
+                        <a href="@Url.Action("EditProperty", "Manage", new { idPropiedad = Model.IdPropiedad })" class="button">Editar </a>
+                        @{
+                            var sDesactivar = string.Empty;
+                            if (Model.IdEstadoAviso == (int)eEstadosAviso.BAJA)
+                            {
+                                sDesactivar = "disabled";
+                            }
+                        }
+                        <a href="javascript:void(0);" 
+                           onclick="javascript: confirmacionDeleteModal($(this).data('id'), $(this).data('titulo'), $(this).data('comentarios'));" 
+                           class="button delete_user_car @sDesactivar" 
+                           data-id="@Model.IdPropiedad" 
+                           data-titulo="@sTipoAviso | @Model.Titulo"
+                           data-comentarios="@Model.Comentarios">Eliminar </a>
+
+                        <a href="@Url.Action("Index", "PropertyDetail", new { idPropiedad = Model.IdPropiedad })" class="button">Ver </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

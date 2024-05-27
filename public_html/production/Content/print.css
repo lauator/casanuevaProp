@@ -1,0 +1,102 @@
+﻿@media print {
+ /*   html, body {
+        height: 99%;    
+    }*/
+*{background:transparent !important;}
+    *:before,
+    *:after {
+        color: #000 !important;
+        text-shadow: none !important;
+        background: transparent !important;
+        -webkit-box-shadow: none !important;
+        box-shadow: none !important;
+    }
+    /*HEADER*/
+    .header-connect .header-social,
+    .navbar-header .navbar-toggle,
+    .navbar-collapse .navbar-right,
+    .navbar-collapse .navbar-right {
+        display:none;
+    }
+    .navbar-default{
+        position:fixed;
+        top:60px;
+        border-color: transparent !important;
+    }
+    /*CONTENT*/
+    div.navbar-header img
+    {
+      max-width: 100% !important;
+      position:fixed;
+      top:10;
+      margin:5;
+      width:150;
+      height:75;
+      opacity:0.5;
+    }
+    .property-price{
+        position: fixed;
+        text-align:center; 
+        margin: 0;
+        top:20;       
+    }
+    .page-title {
+        position: relative;
+        top:-30;
+        clear:both;
+        padding-bottom:10;
+        /*display:block;*/
+        /*font-size: 20pt;*/
+        text-align:center; 
+        margin:20;
+        /*Linea Horiz*/
+        border-bottom: 1px solid #000;
+        background:transparent !important;
+    }
+    div.lSSlideOuter:before, 
+    div.lSSlideOuter:after,
+    div.single-property-content .row {
+        display:none;
+    }
+    .single-property-wrapper{
+        position:fixed;
+        top:180;
+        padding:0;
+        background:transparent !important;
+    }
+    div.additional-details{
+        position:relative;
+        padding:0;
+        margin:0;
+        top:auto;
+        background:transparent !important;
+    }
+    div.property-features{
+        position:relative;
+        padding:0;
+        margin:40;
+        top:-50px;
+        background:transparent !important; 
+    }
+    .single-property-content .light-slide-item,
+    .single-property-header .property-title,
+    #image-gallery,
+    .favorite-and-print,
+    .dealer-contacts,
+    .dealer-section-space,
+    .input-group,
+    .property-share,
+    .property-video,
+    .sidebar-property .property-meta {
+        display:none;
+    }
+
+    /*FOOTER*/    
+    .footer,
+    .footer-area {
+        display: none;
+    }
+    .single-property #btnBackToProps{
+        display:none;
+    }
+}

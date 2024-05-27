@@ -1,0 +1,145 @@
+﻿@{
+    ViewBag.Title = "CASANUEVA PROPIEDADES | Formulario de Contacto";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+<script>
+    $(function () {
+        $("#SendEmailContactForm").click(function () {
+            var firstname = $("#firstname").val();
+            var lastname = $("#lastname").val();
+            var email = $("#email").val();
+            var subject = $("#subject").val();
+            var message = $("#message").val();
+            SendEmailContactForm(firstname, lastname, email, subject, message);
+        });
+    });
+</script>
+<div class="page-head">
+    <div class="container">
+        <div class="row">
+            <div class="page-head-content">
+                <h1 class="page-title">Página de Contacto</h1> 
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End page header -->
+
+<!-- property area -->
+<div class="content-area recent-property padding-top-40" style="background-color: #FFF;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="" id="contact1">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <h3><i class="fa fa-map-marker"></i> Ubicación</h3>
+                            <p>Achaval 486
+                                <br>Caballito
+                                <br>CABA
+                                <br>
+                                <strong>Buenos Aires</strong>
+                            </p>
+                        </div>
+                        <!-- /.col-sm-4 -->
+                        <div class="col-sm-4">
+                            <h3><i class="fa fa-phone"></i> Número de Contacto</h3>
+                            <p class="text-muted">Por favor no dude en llamarnos para solicitar asesoramiento integral.</p>
+                            <p><strong>011-4431-7811 / 4433-6600</strong></p>
+                        </div>
+                        <!-- /.col-sm-4 -->
+                        <div class="col-sm-4">
+                            <h3><i class="fa fa-envelope"></i> Correo Electrónico</h3>
+                            <p class="text-muted">Recibiremos su consulta o inquietud al email.</p>
+                            <ul>
+                                <li><strong><a href="mailto:">casanuevaprop@gmail.com</a></strong></li>
+                                @*<li><strong><a href="mailto:">info@casanuevaprop.com.ar </a></strong></li>*@
+                            </ul>
+                        </div>
+                        <!-- /.col-sm-4 -->
+                    </div>
+                    <!-- /.row -->
+                    <hr>
+                    <div id="map"></div>
+                    <hr>
+                    <h2>Formulario de Contacto</h2>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="firstname">Nombres</label>
+                                    <input type="text" class="form-control" id="firstname">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="lastname">Apellidos</label>
+                                    <input type="text" class="form-control" id="lastname">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="text" class="form-control" id="email">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="subject">Asunto</label>
+                                    <input type="text" class="form-control" id="subject">
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="message">Mensaje</label>
+                                    <textarea id="message" class="form-control"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 text-center">
+                                <button id="SendEmailContactForm" type="submit" class="btn btn-primary"><i class="fa fa-envelope-o"></i> ENVIAR</button>
+                            </div>
+                        </div>
+                        <!-- /.row -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+@*<script src="https://maps.googleapis.com/maps/api/js"></script>*@
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyChpy3WP7YGz_kIct4N3ph5RilCQ7F1be0"></script>.
+<script src="~/Scripts/gmaps.js"></script>
+<script>
+      /* Map Object */
+      map();
+      function map() {
+
+          var styles = [{ "featureType": "landscape", "stylers": [{ "saturation": -100 }, { "lightness": 65 }, { "visibility": "on" }] }, { "featureType": "poi", "stylers": [{ "saturation": -100 }, { "lightness": 51 }, { "visibility": "simplified" }] }, { "featureType": "road.highway", "stylers": [{ "saturation": -100 }, { "visibility": "simplified" }] }, { "featureType": "road.arterial", "stylers": [{ "saturation": -100 }, { "lightness": 30 }, { "visibility": "on" }] }, { "featureType": "road.local", "stylers": [{ "saturation": -100 }, { "lightness": 40 }, { "visibility": "on" }] }, { "featureType": "transit", "stylers": [{ "saturation": -100 }, { "visibility": "simplified" }] }, { "featureType": "administrative.province", "stylers": [{ "visibility": "off" }] }, { "featureType": "water", "elementType": "labels", "stylers": [{ "visibility": "on" }, { "lightness": -25 }, { "saturation": -100 }] }, { "featureType": "water", "elementType": "geometry", "stylers": [{ "hue": "#ffff00" }, { "lightness": -25 }, { "saturation": -97 }] }];
+          map = new GMaps({
+              el: '#map',
+              lat: -34.6297511,
+              lng: -58.4507159,
+              zoomControl: true,
+              zoomControlOpt: {
+                  style: 'SMALL',
+                  position: 'TOP_LEFT'
+              },
+              panControl: false,
+              streetViewControl: false,
+              mapTypeControl: false,
+              overviewMapControl: false,
+              scrollwheel: false,
+              draggable: false,
+              styles: styles
+          });
+
+          map.addMarker({
+              lat: -34.6297511,
+              lng: -58.4507159,
+              /* ,
+               title: '',
+               infoWindow: {
+               content: '<p>HTML Content</p>'
+               }*/
+          });
+      }
+</script>

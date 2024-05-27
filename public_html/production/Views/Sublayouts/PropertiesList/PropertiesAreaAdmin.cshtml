@@ -1,0 +1,211 @@
+﻿@using PagedList.Mvc;
+@using Casanueva.Helpers;
+@model Casanueva.Models.PropertiesListViewModel
+@{
+    ViewBag.Title = "Administración de propiedades";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    <script src="~/Scripts/casanueva.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function (){
+            cargarSelect('#ddlAmbientes', 10);
+            cargarSelect('#ddlSanitarios', 10);
+
+            $("#items_per_page").change(function () {
+                searchPropFromAdmin("default");
+            });
+        });
+
+        //$('#esDestacado').checkbox().chbxChecked(null);
+        //$("#esDestacado").prop("indeterminate", true);
+
+        //// Adding popstate event listener to handle browser back button
+        //window.addEventListener("popstate", function (e) {
+        //    $.ajax({
+        //        url: location.href,
+        //        success: function (result) {
+        //            $('#PropertiesListSection').html(result);
+        //        }
+        //    });
+        //});
+
+        $(function () {
+            $("#btnSearchProperty").click(function () {
+                searchPropFromAdmin();
+            });
+
+            $("#SearchString").keypress(function (e) {
+                if (e.keyCode == 13) {
+                    searchPropFromAdmin();
+                }
+            });
+            $("#CodigoPropiedad").keypress(function (e) {
+                if (e.keyCode == 13) {
+                    searchPropFromAdmin();
+                }
+            });
+
+            $("#btnResetProperty").click(function () {
+                resetForm();
+            });
+
+            $('body').on('click', '#PropertiesListSectionAdmin .pagination a', function (event) {
+                event.preventDefault();
+                ChangeUrl('FiltrarPropiedadesAdministracion', url);
+
+                var searchString = $('#SearchString').val();
+                if (searchString == undefined || searchString == '') {
+                    searchString = '';
+                } else {
+                    searchString = '&searchString=' + searchString;
+                }
+                var url = $(this).attr('href') + searchString;
+                console.log(url);
+                $.ajax({
+                    url: url,
+                    success: function (result) {
+                        $('#PropertiesListSectionAdmin').html(result);
+                    }
+                });
+            });
+
+
+            $('body').on('click', '#PropertiesListSectionAdmin .table a', function (event) {
+                event.preventDefault();
+                //searchPropFromAdmin("default");
+            });
+
+            var resetForm = function () {
+                $.ajax({
+                    type: "POST",
+                    dataType: 'json',
+                    url: '@Url.Action("ResetFiltroPropiedadesAdministracion", "PropertiesList")',
+                    //contentType: "application/json; charset=utf-8",
+                    success: function (result) {
+                        console.log('Filtros limpios.')
+                    },
+                    error: function (result) {
+                        console.log('Error procesando.')
+                    }
+                });
+            };
+
+            var sortPropiedades = function () {
+                searchPropFromAdmin("not_default");
+            };
+
+        });
+    </script>
+
+    <div class="page-head">
+        <div class="container">
+            <div class="row">
+                <div class="page-head-content">
+                    <h1 class="page-title">@ViewBag.Title | Hola @HttpContext.Current.User.Identity.Name</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End page header -->
+    <div id="hiddenFields">
+        <input type="hidden" id="txtHidPrecioMin">
+        <input type="hidden" id="txtHidPrecioMax">
+        <input type="hidden" id="txtHidDescripcion">
+        <input type="hidden" id="txtHidTest" />
+    </div>
+    <!-- property area -->
+    <div class="properties-area recent-property" style="background-color: #FFF;">
+        <div class="container">
+            <div class="row">
+
+                <div class="col-md-3 p0 padding-top-40">
+                    <div class="blog-asside-right pr0">
+                        <div class="panel panel-default sidebar-menu wow fadeInRight animated">
+
+                            @*<div class="panel-heading">
+                                <h3 class="panel-title">Hola @HttpContext.Current.User.Identity.Name</h3>
+                            </div>*@
+                            <!--/ .texto-user-session-info-->
+
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Búsqueda inteligente</h3>
+                            </div>
+                            <!--/ .texto-buscador-->
+
+                            <div class="panel-body search-widget">
+                                <form action="" class="form-inline">
+                                    <fieldset>
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <input id="SearchString" name="SearchString" type="text" class="form-control" placeholder="Palabra clave...">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <input id="CodigoPropiedad" name="CodigoPropiedad" type="text" class="form-control" placeholder="Por Código...">
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    <fieldset class="padding-5">
+                                        <div class="row">
+                                            <div class="col-xs-6">
+                                                <label><b>Estado:</b></label>
+                                                @Html.DropDownListFor(m => m.Combos.EstadoAvisoSeleccionado, Model.Combos.EstadosAviso, htmlAttributes: new { @class = "selectpicker", id = "ddlEstadoAviso" })
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <label><b>Operación:</b></label>
+                                                @Html.DropDownListFor(m => m.Combos.TipoOperacionSeleccionado, Model.Combos.TiposOperacion, htmlAttributes: new { @class = "selectpicker", id = "ddlTipoAviso" })
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    <fieldset class="padding-5">
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <div class="checkbox">
+                                                    <label><input id="esDestacado" type="checkbox"> @Casanueva.Constants.TextosVarios.SoloDestacados</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    <fieldset>
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <input id="btnSearchProperty" class="button btn largesearch-btn" value="Buscar" type="button">
+                                            </div>
+                                            <div class="col-xs-12">
+                                                <input id="btnResetProperty" class="button btn largesearch-btn" style="background-color:#FF0077;color:#FFF;font-size:16px;font-weight:bold" value="Quitar Filtros" type="submit">
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End search section -->
+
+                <div class="col-md-9  pr0 padding-top-40 properties-page">
+                    <div class="col-md-12 clear">
+                        <div class="col-xs-12 col-md-4 page-subheader sorting pl0">
+                            <div class="items-per-page">
+                                <label for="items_per_page"><b>Propiedades por página:</b></label>
+                                <div id="frmPaging" class="sel">
+                                    @Html.DropDownList("pageSize", (List<SelectListItem>)ViewBag.PageSize, new { @class = "sel", id = "items_per_page", name = "per_page"})
+                                </div>
+                                <!--/ .sel-->
+                            </div>
+                            <!--/ .items-per-page-->
+                        </div>
+                    </div>
+
+                    <!-- BLOQUE PARA TODAS LAS PROPIEDADES CUANDO HAY USUARIO LOGEADO  -->
+                    <div id="PropertiesListSectionAdmin">
+                        @Html.Partial("~/Views/Sublayouts/PropertiesList/PropertiesListSectionAdmin.cshtml", Model)
+                    </div>
+                    <!--/ .list-type-->
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
