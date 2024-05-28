@@ -1,0 +1,935 @@
+﻿@*@model Casanueva.Controllers.AddPropertyController*@
+@model Casanueva.Models.AddPropertyViewModel
+
+@{
+    ViewBag.Title = "CASANUEVA PROPIEDADES | Agregar Propiedad";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<div class="page-head">
+    <div class="container">
+        <div class="row">
+            <div class="page-head-content">
+                <h1 class="page-title">Agregar Propiedad</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+   
+</style>
+
+<script src="~/Scripts/casanueva.js"></script>
+<script src="~/Scripts/jquery.bootstrap.wizard.js"></script>
+<script src="~/Scripts/bootstrap-wizard.min.js"></script>
+<script src="~/Scripts/wizard.js"></script>
+<link href="~/styles/wizard.css" rel="stylesheet" />
+<link href="~/Content/style.css" rel="stylesheet" />
+<link href="~/styles/addProperty.css" rel="stylesheet" />
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+@*<script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.js"></script>*@
+
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/additional-methods.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        cargarSelect('#ddlPiso', 50);
+        cargarSelect('#ddlAmbientes', 10);
+        cargarSelect('#ddlSanitarios', 10);
+        cargarSelect('#ddlDormitorios', 10);
+        cargarSelect('#ddlCantidadPisos', 50);
+        cargarSelect('#ddlCantidadPorPisos', 10);
+        cargarSelect('#ddlCantidadAscensores', 20);
+        cargarSelect('#ddlCantidadCocheras', 20);
+        cargarSelect('#ddlAntiguedad', 100);     
+    });
+
+    $(function () {
+        $("#btnSiguienteWiz").click(function() {
+            $("#alert-success").fadeIn(1000).delay(2000).fadeOut(2000);
+        });
+    });
+
+
+    function CmdAdd_onclick() {
+
+        var newTable, startTag, endTag;
+
+        if ($('#txtLargoDimension').val().trim() == "" || $('#txtAnchoDimension').val().trim() == "")
+            return;
+
+        if ($('#txtComentarioDimension').val().trim() == "")
+            $('#txtComentarioDimension').val("-");
+
+        var largoTemp = $('#txtLargoDimension').val().trim();
+        var anchoTemp = $('#txtAnchoDimension').val().trim();
+
+        largoTemp = largoTemp.replace('.', ',');
+        anchoTemp = anchoTemp.replace('.', ',');
+
+        $('#txtLargoDimension').val(largoTemp);
+        $('#txtAnchoDimension').val(anchoTemp);
+
+        //Creating a new table
+        startTag = "<TABLE class=\"table table-striped\" id='tblAmbientes' name='tblAmbientes'><TBODY><TR><TD style=\"WIDTH: 120px\">Codigo Ambiente</TD><TD style=\"WIDTH: 120px\">Ambiente</TD><TD style=\"WIDTH: 120px\">Largo</TD><TD style=\"WIDTH: 120px\">Ancho</TD><TD style=\"WIDTH: 120px\">Comentarios</TD><TD style=\"WIDTH: 120px\">Eliminar</TD></TR>"
+        endTag = "</TBODY></TABLE>"
+
+        newTable = startTag;
+        var trContents;
+
+        //Get the row contents
+        trContents = document.body.getElementsByTagName('TR');
+        if (trContents.length > 1) {
+            for (i = 1; i < trContents.length; i++) {
+                if (trContents[i].innerHTML) {
+                    // Add previous rows
+                    newTable += "<TR>";
+                    newTable += trContents[i].innerHTML;
+                    newTable += "</TR>";
+                }
+            }
+        }
+        //Add the Latest row
+        newTable += "<TR><TD style=\"WIDTH: 120px\" >" + document.getElementById('ddlAmbiente').value + "</TD>";
+        newTable += "<TD style=\"WIDTH: 120px\" >" + $("#ddlAmbiente option:selected").text(); + "</TD>";
+        newTable += "<TD style=\"WIDTH: 120px\" >" + $('#txtLargoDimension').val() + "</TD>";
+        newTable += "<TD style=\"WIDTH: 120px\" >" + $('#txtAnchoDimension').val() + "</TD>";
+        newTable += "<TD style=\"WIDTH: 120px\" >" + $('#txtComentarioDimension').val() + "</TD>";
+        newTable += "<td><button type=\"button\"  class=\"removebutton\" title=\"Remove this row\">X</button></TD><TR>";
+
+        newTable += endTag;
+
+        //Update the Previous Table With New Table.
+        document.getElementById('tableDiv').innerHTML = newTable;
+
+
+        var miDimension = new Object();
+        miDimension.idTipoAmbiente = document.getElementById('ddlAmbiente').value;
+        miDimension.largo = $('#txtLargoDimension').val();
+        miDimension.ancho = $('#txtAnchoDimension').val();
+        miDimension.alto = 0;
+        miDimension.descripcion = $('#txtComentarioDimension').val();
+
+        enviarDatosFila(miDimension);
+
+        $('#txtLargoDimension').val("");
+        $('#txtAnchoDimension').val("");
+        $('#txtComentarioDimension').val("");
+
+
+        $('button.removebutton').on('click', function () {
+            quitarFila($($(this).parent().parent()).index())
+            $(this).closest('tr').remove();
+            return false;
+        });
+
+    }
+    function getDataTable() {
+        var table = $("#tableDiv");
+        var datos = [];
+
+        table.find('tr').each(function (i) {
+            if (i > 0) {
+                var $tds = $(this).find('td'),
+                    _idAmbiente = $tds.eq(0).text(),
+                    _largo = $tds.eq(2).text();
+                    _ancho = $tds.eq(3).text();
+                    _comentario = $tds.eq(4).text();
+
+                    if (_idAmbiente != "") {
+                    datos.push({ IdDimension: 0, IdPropiedad: 0, Descripcion: _comentario, IdTipoAmbiente: _idAmbiente, Largo: _largo, Ancho: _ancho, Alto : 0});
+                }
+            }
+        });
+
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Manage/SetSessionTableData",
+            datatype: "json",
+            data: JSON.stringify({ datos }),
+
+            success: function (data) {
+
+            },
+            failure: function (data) {
+                alert("Failure " + data.responseText);
+            },
+            error: function (data) {
+                alert("Error " + data.responseText);
+            }
+        })
+
+    }
+    function quitarFila(indice) {
+
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Manage/DeleteRowToSession",
+            datatype: "json",
+            data: JSON.stringify({ indice }),
+
+            success: function (data) {
+
+            },
+            failure: function (data) {
+                alert("Failure " + data.responseText);
+            },
+            error: function (data) {
+                alert("Error " + data.responseText);
+            }
+        })
+
+
+    }
+    function enviarDatosFila(dimension)
+    {
+
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Manage/AddRowToSession",
+            datatype: "json",
+            data: JSON.stringify({ dimension }),
+
+            success: function (data) {
+
+            },
+            failure: function (data) {
+                alert("Failure " + data.responseText);
+            },
+            error: function (data) {
+                alert("Error " + data.responseText);
+            }
+        })
+
+
+    }
+</script>
+
+@if (Model.ShowSuccessModal)
+{
+    <div class="container">
+        <div class="alert alert-success alert-dismissible fade in">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong>GUARDADO OK</strong> La propiedad se ha guardado exitosamente.
+        </div>
+    </div>
+}
+@if (Model.ShowFailureModal)
+{
+    <div class="container">
+        <div class="alert alert-danger alert-dismissible fade in">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong>ERROR GUARDANDO!</strong> Se ha producido un error mientras guardaba la propiedad.
+        </div>
+    </div>
+}
+
+<div class="content-area submit-property" style="background-color: #FCFCFC;">
+    &nbsp;
+    <div class="container">
+        <div class="clearfix">
+            <div class="wizard-container">
+
+                <div class="wizard-card ct-wizard-orange" id="wizardProperty">
+                    <form action="AddProperty" name="formulario" id="formulario" method="POST" enctype="multipart/form-data">
+                        <fieldset id="propForm">
+                            <ul>
+                                <li><a href="#step1" data-toggle="tab">Información Básica</a></li>
+                                <li><a href="#step2" data-toggle="tab">Ubicación</a></li>
+                                <li><a href="#step3" data-toggle="tab">Datos adicionales</a></li>
+                                <li><a href="#step4" data-toggle="tab">Imágenes</a></li>
+                                <li><a href="#step5" data-toggle="tab">Dimensiones </a></li>
+                            </ul>
+
+                            <div class="tab-content">
+
+                                <div class="tab-pane" id="step1">
+
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label>Código <small></small></label>
+                                                @*<input name="txtCodigo" type="text" class="form-control" placeholder="001">*@
+                                                @Html.TextBoxFor(m => m.CodigoPropiedad, new { @class = "form-control", id = "txtCodigo", name = "txtCodigo", placeholder = "CN001" })
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label>Nombre del aviso <small> (requerido)</small></label>
+                                                @*<input name="txtTituloAviso" type="text" class="form-control" placeholder="Excelente propiedad..." required>*@
+                                                @Html.TextBoxFor(m => m.TituloAviso, new { @class = "form-control", id = "txtTituloAviso", name = "txtTituloAviso", placeholder = "Excelente propiedad en..." })
+                                                @*@Html.ValidationMessageFor(model => model.TituloAviso)*@
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-sm-2">
+                                            <div class="form-group">
+                                                @Html.LabelFor(m => m.MonedaSeleccionada)
+                                                @Html.DropDownListFor(m => m.MonedaSeleccionada, Model.Monedas, htmlAttributes: new { @class = "selectpicker", id = "ddlMoneda" })
+
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <div class="form-group">
+                                                <label>Precio<small> (requerido)</small></label>
+                                                @*<input name="txtPrecio" id="txtPrecio" type="text" class="form-control" placeholder="450000" required>*@
+                                                @Html.TextBoxFor(m => m.Precio, new { @class = "form-control", id = "txtPrecio", name = "txtPrecio", type = "number", min = "0", max = "9999999", placeholder = "450000" })
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-sm-12">
+                                            <div class="form-group">
+                                                <label>Descripción de la propiedad <small></small></label>
+                                                @*<textarea name="txtComentarios" type="text" rows="5" class="form-control" placeholder="Este inmueble es ideal..."></textarea>*@
+                                                @Html.TextAreaFor(m => m.Comentarios, new { @class = "form-control", id = "txtComentarios", name = "txtComentarios", rows = "5", placeholder = "Este inmueble es ideal..." })
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-3 padding-bottom-15">
+                                            <div class="form-group">
+                                                <div class="checkbox">
+                                                    <label>
+                                                        @*@Html.CheckBox("chkDestacado", htmlAttributes: new { id = "chkDestacado" })*@
+
+                                                        @Html.CheckBoxFor(m => m.Destacado, new { @class = "form-control", id = "chkDestacado", name = "chkDestacado" })
+                                                        <label for="chkDestacado">Destacado</label>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+                                                @Html.LabelFor(m => m.TipoPropiedadSeleccionado)
+                                                @Html.DropDownListFor(m => m.TipoPropiedadSeleccionado, Model.TiposPropiedades, htmlAttributes: new { @class = "selectpicker", id = "ddlTipoPropiedad" })
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+                                                @Html.LabelFor(m => m.TipoOperacionSeleccionado)
+                                                @Html.DropDownListFor(m => m.TipoOperacionSeleccionado, Model.TiposOperacion, htmlAttributes: new { @class = "selectpicker", id = "ddlTipoAviso" })
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+                                                @Html.LabelFor(m => m.EstadoAvisoSeleccionado)
+                                                @Html.DropDownListFor(m => m.EstadoAvisoSeleccionado, Model.EstadosAviso, htmlAttributes: new { @class = "selectpicker", id = "ddlEstadoAviso" })
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-sm-12">
+                                            <div class="form-group">
+                                                <label>Imagen Principal <small></small></label>
+                                                <div class="picture-container">
+                                                    <div class="picture">
+                                                        <img src="~/images/default-property.jpg" class="picture-src" id="wizardPicturePreview" title="" />
+                                                        <input type="file" id="wizard-picture" name="wizardPicture">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--  End step 1 -->
+
+                                <div class="tab-pane" id="step2">
+                                    @*<h4 class="info-text"> Cuéntanos sobre el inmueble </h4>*@
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="col-sm-4">
+                                                @Html.LabelFor(m => m.CiudadSeleccionada)
+                                                @Html.DropDownListFor(m => m.CiudadSeleccionada, Model.Ciudades, htmlAttributes: new { @class = "selectpicker", id = "ddlBarrio" })
+
+
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <div class="form-group">
+                                                    <label>Calle<small></small></label>
+                                                    @*<input name="txtCalle" type="text" class="form-control" placeholder="Av. Congreso">*@
+                                                    @Html.TextBoxFor(m => m.Calle, new { @class = "form-control", id = "txtCalle", name = "txtCalle", placeholder = "Av. Congreso" })
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-4">
+                                                <div class="form-group">
+                                                    <label>Número<small></small></label>
+                                                    @*<input name="txtNumeroCalle" type="text" class="form-control" placeholder="1234">*@
+                                                    @Html.TextBoxFor(m => m.NumeroCalle, new { @class = "form-control", id = "txtNumeroCalle", type = "number", name = "txtNumeroCalle", min = "0", max = "99999", placeholder = "1234" })
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="col-sm-12">
+
+                                            <div class="col-sm-4">
+                                                <div class="form-group">
+                                                    <label>Entre calles<small></small></label>
+                                                    @*<input id="txtEntreCalle" name="txtEntreCalle" type="text" class="form-control" placeholder="Entre Washington y Estomba">*@
+                                                    @Html.TextBoxFor(m => m.EntreCalles, new { @class = "form-control", id = "txtEntreCalle", name = "txtEntreCalle", placeholder = "Entre Washington y Estomba" })
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <label>Piso</label>
+                                                <select id="ddlPiso" name="ddlPiso" class="selectpicker" data-live-search="true" data-live-search-style="begins" title="Seleccione"></select>
+
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <div class="form-group">
+                                                    <label>Departamento<small></small></label>
+                                                    @*<input id="txtDepartamento" name="txtDepartamento" type="text" class="form-control" placeholder="A">*@
+                                                    @Html.TextBoxFor(m => m.Departamento, new { @class = "form-control", id = "txtDepartamento", name = "txtDepartamento", placeholder = "A" })
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+
+
+
+
+                                        <br>
+                                    </div>
+                                </div>
+                                <!-- End step 2 -->
+
+                                <div class="tab-pane" id="step3">
+                                    <div class="row">
+
+
+                                        <div class="col-sm-12">
+
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Metros Totales<small> (m2)</small></label>
+                                                    @*<input name="txtMetrosTotales" type="text" class="form-control" placeholder="1000">*@
+                                                    @Html.TextBoxFor(m => m.MetrosTotales, new { @class = "form-control", id = "txtMetrosTotales", type = "number", name = "txtMetrosTotales", min = "0", max = "99999", placeholder = "1000" })
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Metros Cubiertos<small> (m2)</small></label>
+                                                    @*<input name="txtMetrosCubiertos" type="text" class="form-control" placeholder="1000">*@
+                                                    @Html.TextBoxFor(m => m.MetrosCubiertos, new { @class = "form-control", id = "txtMetrosCubiertos", type = "number", name = "txtMetrosCubiertos", min = "0", max = "99999", placeholder = "1000" })
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Moneda de Expensas<small></small></label>
+                                                    @Html.DropDownListFor(m => m.MonedaExpensasSeleccionada, Model.Monedas, htmlAttributes: new { @class = "selectpicker", id = "ddlMonedaExpensas" })
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Monto Expensas<small></small></label>
+                                                    @*<input name="txtMontoExpensas" type="text" class="form-control" placeholder="1000">*@
+                                                    @Html.TextBoxFor(m => m.MontoExpensas, new { @class = "form-control", id = "txtMontoExpensas", type = "number", name = "txtMontoExpensas", min = "0", max = "9999999", placeholder = "1000" })
+                                                </div>
+                                            </div>
+                                            @*<div class="col-sm-3">
+                                <label>Ambientes</label>
+                                <select id="ddlCantidadAmbientes" class="selectpicker" data-live-search="true" data-live-search-style="begins" title="Seleccione"></select>
+                            </div>*@
+
+                                        </div>
+                                        <div class="col-sm-12">
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Ambientes</label>
+                                                    @Html.TextBoxFor(m => m.CantidadAmbientes, new { @class = "form-control", id = "txtCantidadAmbientes", name = "txtCantidadAmbientes", type = "number", min = "0", max = "100", placeholder = "0" })
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Sanitarios</label>
+                                                    @Html.TextBoxFor(m => m.CantidadSanitarios, new { @class = "form-control", id = "txtCantidadSanitarios", name = "txtCantidadSanitarios", type = "number", min = "0", max = "100", placeholder = "0" })
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Dormitorios</label>
+                                                    @Html.TextBoxFor(m => m.CantidadDormitorios, new { @class = "form-control", id = "txtCantidadDormitorios", name = "txtCantidadDormitorios", type = "number", min = "0", max = "100", placeholder = "0" })
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Pisos</label>
+                                                    @Html.TextBoxFor(m => m.CantidadPisos, new { @class = "form-control", id = "txtCantidadPisos", name = "txtCantidadPisos", type = "number", min = "0", max = "100", placeholder = "0" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-12 padding-top-15">
+
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Cantidad Por Piso</label>
+                                                    @Html.TextBoxFor(m => m.CantidadPorPiso, new { @class = "form-control", id = "txtCantidadPorPiso", name = "txtCantidadPorPiso", type = "number", min = "0", max = "100", placeholder = "0" })
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Ascensores</label>
+                                                    @Html.TextBoxFor(m => m.CantidadAscensores, new { @class = "form-control", id = "txtCantidadAscensores", name = "txtCantidadAscensores", type = "number", min = "0", max = "100", placeholder = "0" })
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Cocheras</label>
+                                                    @Html.TextBoxFor(m => m.CantidadCocheras, new { @class = "form-control", id = "txtCantidadCocheras", name = "txtCantidadCocheras", type = "number", min = "0", max = "100", placeholder = "0" })
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label>Antigüedad <small> (años) </small> </label>
+                                                    @Html.TextBoxFor(m => m.Antiguedad, new { @class = "form-control", id = "txtAntiguedad", name = "txtAntiguedad", type = "number", min = "0", max = "100", placeholder = "0" })
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="col-sm-12 padding-top-15">
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    @Html.LabelFor(m => m.OrientacionSeleccionada)
+                                                    @Html.DropDownListFor(m => m.OrientacionSeleccionada, Model.Orientaciones, htmlAttributes: new { @class = "selectpicker", id = "ddlOrientacion" })
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-sm-12 padding-bottom-15">
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.AptoProfesional, new { @class = "form-control", id = "chkAptoProfesional", name = "chkAptoProfesional" })
+                                                            <label for="chkAptoProfesional">Apto Profesional</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Balcon, new { @class = "form-control", id = "chkBalcon", name = "chkBalcon" })
+                                                            <label for="chkBalcon">Balcón</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.Agua, new { @class = "form-control", id = "chkAguaCorriente", name = "chkAguaCorriente" })
+                                                            <label for="chkAguaCorriente">Agua Corriente</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.Gas, new { @class = "form-control", id = "chkGasNatural", name = "chkGasNatural" })
+                                                            <label for="chkGasNatural">Gas Natural</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-sm-12 padding-bottom-15">
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.Cloaca, new { @class = "form-control", id = "chkCloaca", name = "chkCloaca" })
+                                                            <label for="chkCloaca">Cloaca</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.CalderaIndividual, new { @class = "form-control", id = "chkCaldera", name = "chkCaldera" })
+                                                            <label for="chkCaldera">Caldera Individual</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.AireAcondicionado, new { @class = "form-control", id = "chkAireAcondicionado", name = "chkAireAcondicionado" })
+                                                            <label for="chkAireAcondicionado">Aire Acondicionado</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.ServicioSeguridad, new { @class = "form-control", id = "chkServicioSeguridad", name = "chkServicioSeguridad" })
+                                                            <label for="chkServicioSeguridad">Servicio de Seguridad</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-sm-12 padding-bottom-15">
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.Telefono, new { @class = "form-control", id = "chkTelefono", name = "chkTelefono" })
+                                                            <label for="chkTelefono">Teléfono</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.Internet, new { @class = "form-control", id = "chkInternet", name = "chkInternet" })
+                                                            <label for="chkInternet">Internet</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.Luz, new { @class = "form-control", id = "chkLuz", name = "chkLuz" })
+                                                            <label for="chkLuz">Luz</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.PorteroElectrico, new { @class = "form-control", id = "chkPorteroElectrico", name = "chkPorteroElectrico" })
+                                                            <label for="chkPorteroElectrico">Portero Eléctrico</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="col-sm-12 padding-bottom-15">
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.Termotanque, new { @class = "form-control", id = "chkTermotanque", name = "chkTermotanque" })
+                                                            <label for="chkTermotanque">Termotanque</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            @Html.CheckBoxFor(m => m.Servicio.TV, new { @class = "form-control", id = "chkTV", name = "chkTV" })
+                                                            <label for="chkTV">TV</label>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+
+                                        <br>
+                                    </div>
+                                </div>
+                                <!-- End step 3 -->
+
+                                <div class="tab-pane" id="step4">
+                                    @*<h4 class="info-text">Sube imágenes y videos </h4>*@
+                                    <label>Imágenes de la propiedad</label>
+                                    <div class="form-group">
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen1Preview" title="" />
+                                        <input type="file" id="imagen1" name="imagen1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen2Preview" title="" />
+                                        <input type="file" id="imagen2" name="imagen2">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen3Preview" title="" />
+                                        <input type="file" id="imagen3" name="imagen3">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen4Preview" title="" />
+                                        <input type="file" id="imagen4" name="imagen4">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen5Preview" title="" />
+                                        <input type="file" id="imagen5" name="imagen5">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen6Preview" title="" />
+                                        <input type="file" id="imagen6" name="imagen6">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen7Preview" title="" />
+                                        <input type="file" id="imagen7" name="imagen7">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen8Preview" title="" />
+                                        <input type="file" id="imagen8" name="imagen8">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen9Preview" title="" />
+                                        <input type="file" id="imagen9" name="imagen9">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen10Preview" title="" />
+                                        <input type="file" id="imagen10" name="imagen10">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen11Preview" title="" />
+                                        <input type="file" id="imagen11" name="imagen11">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="picture-container">
+                                    <div class="picture">
+                                        <img src="~/images/default-property.jpg" class="picture-src" id="imagen12Preview" title="" />
+                                        <input type="file" id="imagen12" name="imagen12">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="property-video">Video de la propiedad</label>
+                                @Html.TextBoxFor(m => m.URLVideo, new { @class = "form-control", id = "property_video", name = "property_video", placeholder = "http://www.youtube.com, http://vimeo.com" })
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+                                <!--  End step 4 -->
+
+                                <div class="tab-pane" id="step5">
+                                    @*<h4 class="info-text"> Finalizar y enviar </h4>*@
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="col-sm-4">
+                                                <div class="form-group">
+                                                    <label>Ambiente <small></small></label>
+                                                    @Html.DropDownListFor(m => m.AmbienteSeleccionado, Model.Ambientes, htmlAttributes: new { @class = "selectpicker", id = "ddlAmbiente" })
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="form-group">
+                                                    <label>Largo <small> (metros) </small></label>
+                                                    <input id="txtLargoDimension" name="txtLargoDimension" type="text" class="form-control" placeholder="4,00" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="form-group">
+                                                    <label>Ancho <small> (metros) </small></label>
+                                                    <input id="txtAnchoDimension" name="txtAnchoDimension" type="text" class="form-control" placeholder="3,50" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <div class="form-group">
+                                                    <label>Comentario</label>
+                                                    <input id="txtComentarioDimension" name="txtComentarioDimension" type="text" class="form-control">
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-sm-12">
+
+                                            <div class="col-sm-4">
+
+                                            </div>
+
+                                            <div class="col-sm-4">
+                                                <input type="button" name="btnAgregarAmbiente" value="Agregar" class="btn btn-default" onclick="return CmdAdd_onclick()" />
+                                            </div>
+
+                                            <div class="col-sm-4">
+
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                    <div class="row">
+
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <br />
+                                            <div id="tableDiv" style="text-align:center">
+                                                <table id="tblAmbientes" name="tblAmbientes" class="table table-striped">
+                                                    <tr style="width:120px ">
+                                                        <td>Codigo Ambiente</td>
+                                                        <td>Ambiente</td>
+                                                        <td>Largo</td>
+                                                        <td>Ancho</td>
+                                                        <td>Comentario</td>
+                                                        <td>Eliminar</td>
+                                                    </tr>
+                                                </table>
+
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                                <!--  End step 5 -->
+
+                                </div>
+
+
+
+
+                            <div class="wizard-footer">
+                                <div class="pull-right">
+                                    <input id="btnSiguienteWiz" type='button' class='btn btn-next btn-primary' name='next' value='Siguiente' />
+                                    <input id="btnFinishSave" type='submit' class='btn btn-finish btn-primary ' name='finish' value='Finalizar' />
+                                </div>
+                                <div class="pull-left">
+                                    <input type='button' class='btn btn-previous btn-default' name='previous' value='Anterior' />
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+
+                            <input type="hidden" id="tableValues" name="tableValues" />
+                        
+                        </fieldset>
+                    </form>
+                </div>
+                <!-- End submit form -->
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Datos sin completar</h4>
+            </div>
+            <div class="modal-body">
+                <p id="lblCampo1"></p>
+                <p id="lblCampo2"></p>
+                <p id="lblCampo3"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,50 @@
+﻿@model IEnumerable<Casanueva.Models.Propiedades>
+@{
+    <!-- property area -->
+    <div id="PropertiesListSectionIndex" class="content-area home-area-1 recent-property" style="background-color: #FCFCFC; padding-bottom: 55px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1 col-sm-12 text-center page-title">
+                    <!-- /.feature title -->
+                    <h2>TENEMOS LAS MEJORES PROPIEDADES DISPONIBLES</h2>
+                    <p>Te acercamos las mejores opciones en porpiedades que puedas encontrar. </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="proerty-th">
+                    <!-- CONTENIDO DE CADA PROPIEDAD -->
+                    @if (Model != null & Model.Count() > 0)
+                    {
+                        foreach (object item in Model)
+                        {
+                            Html.RenderAction("LoadProperty", "PropertyItemIndex", new { prop = item });
+                        }
+                        <!-- Botón ver mas -->
+                        <div class="col-sm-6 col-md-3 p0">
+                            <div class="box-tree more-proerty text-center">
+                                <div class="item-tree-icon">
+                                    <a href="@Url.Action("ListadoPropiedades", "PropertiesList")"><i class="fa fa-th"></i></a>
+                                </div>
+                                <div class="col-xs-centered col-md-centered more-entry overflow">
+                                    <h5><a href="@Url.Action("ListadoPropiedades", "PropertiesList")">¿No puede decidirse? </a></h5>
+                                    <h5 class="tree-sub-ttl">Busque entre todas nuestras propiedades</h5>
+                                    <button class="btn border-btn more-black" value="Todas las Propiedades">@Html.ActionLink("Utilice el Buscador...", "ListadoPropiedades", "PropertiesList")</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /./ Botón ver mas -->                    
+                    }
+                    else
+                    {
+                        <div class="text-center">
+                            @{
+                                Html.RenderPartial("~/Views/Sublayouts/PropertiesList/PropertiesNotFoundSection.cshtml");
+                            }
+                        </div>
+                    }     
+                </div>
+            </div>
+        </div>
+    </div>
+}

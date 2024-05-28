@@ -1,0 +1,60 @@
+﻿<nav class="navbar navbar-default ">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="@Url.Action("Index","Home")"><img src="../images/logo.png" alt=""></a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse yamm" id="navigation">
+            <div class="button navbar-right">
+                @*<button class="navbar-btn nav-button wow bounceInRight login" data-wow-delay="0.45s">@Html.ActionLink("Login", "Login", "Account")</button >*@
+                @*<button class="navbar-btn nav-button wow bounceInRight login" data-wow-delay="0.45s">@Html.ActionLink("Logout", "LogOff", "Account")</button>*@
+                @*@Html.ActionLink("Ingresar", "AddProperty", "Manage", null, new { @class = "navbar-btn nav-button wow bounceInRight login" })*@
+
+                @*<button class="navbar-btn nav-button wow fadeInRight" onclick="window.open('submit-property.html')" data-wow-delay="0.48s">Confirmar</button>*@
+            </div>
+            <ul class="main-nav nav navbar-nav navbar-right">
+                <li class="wow fadeInDown" data-wow-delay="0.1s">@Html.ActionLink("Inicio", "Index", "Home")</li>
+                <li class="wow fadeInDown" data-wow-delay="0.2s">@Html.ActionLink("Propiedades", "ListadoPropiedades", "PropertiesList")</li>
+                <li class="wow fadeInDown" data-wow-delay="0.3s">@Html.ActionLink("Contacto", "Index", "Contact")</li>
+                @if (string.IsNullOrEmpty(HttpContext.Current.User.Identity.Name))
+                {
+                    <li class="wow fadeInDown" id="mnuLogin" data-wow-delay="0.4s">@Html.ActionLink("Login", "Login", "Account")</li>
+                }
+                else
+                {
+                    <li class="dropdown ymm-sw" id="mnuAdministracion" data-wow-delay="0.1s">
+                        <a href="#" class="dropdown-toggle active" data-toggle="dropdown" data-hover="dropdown" data-delay="200">Administración <b class="caret"></b></a>
+                        <ul class="dropdown-menu navbar-nav">
+                            <li>
+                                <a href="@Url.Action("AddProperty", "Manage")">Agregar Propiedad</a>
+                            </li>
+                            <li>
+                                <a href="@Url.Action("FiltrarPropiedadesAdministracion", "PropertiesList")">Editar Propiedades</a>
+                            </li>
+                            <li>
+                                <a href="@Url.Action("LogOff", "Account")">Cerrar Sesión</a>
+                            </li>
+                        </ul>
+                    </li>
+                }
+            </ul>
+
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container-fluid -->
+</nav>
+<!-- End of nav bar -->
+@*<script>
+        $(function () {
+            var usrName = "@HttpContext.Current.User.Identity.Name";
+            alert(usrName);
+        });
+    </script>*@

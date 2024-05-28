@@ -1,0 +1,114 @@
+﻿@using PagedList.Mvc;
+@model Casanueva.Models.PropertiesListViewModel
+
+@{
+    string pLayoutListIsActive = (Model.Layout_List_IsActive) ? "proerty-th-list" : "proerty-th";
+    if (Model.ListaDePropiedades.Count > 0)
+    {
+    <div class="col-md-12 clear">
+        <div id="list-type" class="@pLayoutListIsActive">
+            <!-- CONTENIDO DE CADA PROPIEDAD -->
+            @foreach (object item in Model.ListaDePropiedades)
+            {
+                Html.RenderAction("LoadProperty", "PropertyItem", new { prop = item, esAdmin = false, page = ViewBag.page, pageSize = ViewBag.psize });
+            }
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="pull-right">
+            <div class="pagination">
+                @Html.PagedListPager(Model.ListaDePropiedades, page => Url.Action("ListadoPropiedades", "PropertiesList", new { page, pageSize = ViewBag.psize }), PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(new AjaxOptions() { HttpMethod = "POST", UpdateTargetId = "list-type" }))
+            </div>
+        </div>
+    </div>
+    }
+    else
+    {
+        Html.RenderPartial("~/Views/Sublayouts/PropertiesList/PropertiesNotFoundSection.cshtml");
+    }
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+        var filtrosUsados = @Html.Raw(Json.Encode(@Session["FiltrosUsados"]));
+        if(filtrosUsados != null)
+        {
+            var objects = JSON.parse(filtrosUsados);
+                $("#SearchString").val(objects.searchTextParam);
+                $("#txtPrecioMin").val(objects.minPrecio);
+                $("#txtPrecioMax").val(objects.maxPrecio);
+                $("#txtMetrosCubiertosMax").val(objects.metrosCubiertosMax);
+
+                $("#ddlBarrio").val(objects.idBarrio);
+                $("#ddlTipoMoneda").val(objects.idTipoMoneda);
+                $("#ddlTipoAviso").val(objects.idTipoAviso);
+                $("#ddlSanitarios").val(objects.cantBanos);
+                $("#ddlAmbientes").val(objects.cantAmbientes);
+
+            if(objects.conGarage===true)
+            {
+                    $('#conGarage').prop('checked', true);
+                    $("#conGarage").parent().closest('div').addClass('checked');
+                }
+            if(objects.conAptoProf===true)
+            {
+                    $('#conAptoProf').prop('checked', true);
+                    $("#conAptoProf").parent().closest('div').addClass('checked');
+                }
+            if(objects.conAgua===true)
+            {
+                    $('#conAgua').prop('checked', true);
+                    $("#conAgua").parent().closest('div').addClass('checked');
+                }
+            if(objects.conLuz===true)
+            {
+                    $('#conLuz').prop('checked', true);
+                    $("#conLuz").parent().closest('div').addClass('checked');
+            }
+            if(objects.conGas===true)
+            {
+                    $('#conGas').prop('checked',true);
+                    $("#conGas").parent().closest('div').addClass('checked');
+            }
+            if(objects.conInternet===true)
+            {
+                    $('#conInternet').prop('checked', true);
+                    $("#conInternet").parent().closest('div').addClass('checked');
+            }
+            if(objects.conSeguridadPriv===true)
+            {
+                    $('#conSeguridadPriv').prop('checked', true);
+                    $("#conSeguridadPriv").parent().closest('div').addClass('checked');
+            }
+            if(objects.conPorteroElectrico===true)
+            {
+                    $('#conPorteroElectrico').prop('checked', true);
+                    $("#conPorteroElectrico").parent().closest('div').addClass('checked');
+            }
+            if(objects.conAireAcondicionado===true)
+            {
+                    $('#conAireAcondicionado').prop('checked', true);
+                    $("#conAireAcondicionado").parent().closest('div').addClass('checked');
+            }
+        }
+
+        var sortOption = @Html.Raw(Json.Encode(@Session["SortOption"]));
+        if(sortOption != null)
+        {
+            if (sortOption == "price_asc")
+            {
+                    $("#sortByPrice").addClass("active");
+                    $("i#sortIcon").removeClass("fa-sort-numeric-asc");
+                    $("i#sortIcon").addClass("fa-sort-numeric-desc");
+            }
+            else
+            {
+                    $("#sortByPrice").removeClass("active");
+                    $("i#sortIcon").removeClass("fa-sort-numeric-desc");
+                    $("i#sortIcon").addClass("fa-sort-numeric-asc");
+            }
+        }
+    });
+        </script>
+}

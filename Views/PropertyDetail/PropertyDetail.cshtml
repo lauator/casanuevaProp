@@ -1,0 +1,376 @@
+﻿@using Casanueva.Models;
+@using Casanueva.Constants;
+@model Propiedades
+@{
+
+    var sTipoAviso = string.Empty;
+    var sSimboloMoneda = (Model.IdMoneda.Equals(1)) ? Monedas.Peso : Monedas.Dolar;
+    var sMetrosCubiertos = (string.IsNullOrEmpty(Model.MetrosCubiertos.ToString())) ? TextosVarios.NoInfo : Model.MetrosCubiertos.ToString();
+    var sPathImgTipoAviso = string.Empty;
+    switch (Model.IdTipoAviso)
+    {
+        case 1:
+            sTipoAviso = TipoOperacion.Todos;
+            break;
+        case 2:
+            sTipoAviso = TipoOperacion.Venta;
+            sPathImgTipoAviso = "../images/icon/sale-ocean.png";
+            break;
+        case 3:
+            sTipoAviso = TipoOperacion.Alquiler;
+            sPathImgTipoAviso = "../images/icon/rent-ocean.png";
+            break;
+    }
+
+    ViewBag.Title = "CASANUEVA PROPIEDADES | Detalle de la Propiadad";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    <script>
+        $(function () {
+            $("#SendEmailForPropertieInfo").click(function () {
+                var titulo=$(".page-title").text();
+                var descripcion = $("#campoComentPropiedad").text();
+                SendEmailForPropertieInfo(titulo, descripcion);
+            });
+
+            history.pushState(null, null, location.href);
+            window.onpopstate = function () {
+                //history.go(1);
+                redirectToPropiedades();
+            };
+
+            // When the user scrolls down 20px from the top of the document, show the button
+            window.onscroll = function () { scrollFunction() };
+            function scrollFunction() {
+                if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                    document.getElementById("btnBackToProps").style.display = "block";
+                } else {
+                    document.getElementById("btnBackToProps").style.display = "none";
+                }
+            }
+
+            // When the user clicks on the button, scroll to the top of the document
+            $("#btnBackToProps").click(function () {
+                redirectToPropiedades();
+            });
+
+            function redirectToPropiedades(){
+                var pageInput = @Html.Raw(Json.Encode(@Session["ActualPage"]));
+                var pageSizeInput = @Html.Raw(Json.Encode(@Session["ActualPageSize"]));
+                var esAdministracion = @Html.Raw(Json.Encode(@Session["EsAdminitracion"]));
+                if (esAdministracion)
+                {
+                    var url  = '@Url.Action("FiltrarPropiedadesAdministracion", "PropertiesList")';
+                }
+                else
+                {
+                    var url  = '@Url.Action("ListadoPropiedades", "PropertiesList")';
+                }
+                window.location.href = url + "?page=" + pageInput + "&pageSize=" + pageSizeInput;
+            };
+        });
+    </script>
+    <style>
+        #btnBackToProps {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            z-index: 99;
+            font-size: 18px;
+            border: none;
+            outline: none;
+            background-color: red;
+            color: white;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+            #btnBackToProps:hover {
+                background-color: #555;
+            }
+    </style>
+
+<div class="page-head">
+    <div class="container">
+        <div class="row">
+            <div class="page-head-content">
+                <h1 class="page-title">@sTipoAviso - @Model.Titulo </h1>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End page header -->
+
+    <!-- property area -->
+<div class="content-area single-property" style="background-color: #FCFCFC;">
+    &nbsp;
+    <button id="btnBackToProps" title="Volver atrás">&laquo; Volver</button>
+    <div class="container">
+        <div class="clearfix padding-top-40">
+            <div class="col-md-8 single-property-content prp-style-2">
+                <div class="row">
+                    <div class="light-slide-item">
+                        <div class="clearfix">
+                            <div class="favorite-and-print">
+                                @*<a class="add-to-fav" href="#login-modal" data-toggle="modal">
+                                    <i class="fa fa-star-o"></i>
+                                </a>*@
+                                <a class="printer-icon " href="javascript:window.print()">
+                                    <i class="fa fa-print"></i>
+                                </a>
+                            </div>
+
+                            <ul id="image-gallery" class="gallery list-unstyled">
+                                @foreach (var imagen in Model.Imagenes)
+                                {
+                                    <li data-thumb="@imagen.ServerPath" data-src="@imagen.ServerPath">
+                                        <img src="@imagen.ServerPath" />
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- End imagenes area  -->
+
+                <div class="single-property-wrapper">
+                    <div class="section">
+                        <h4 class="s-property-title">@DetallePropiedad.Secciones.Descripcion</h4>
+                        <div class="s-property-content">
+                            <p id="campoComentPropiedad">@Model.Comentarios</p>
+                        </div>
+                    </div>
+                    <!-- End comentarios area  -->
+
+                    <div class="section">
+                        <h4 class="s-property-title">@DetallePropiedad.Secciones.Dimensiones</h4>
+                        <div class="s-property-content">
+                            @{
+                                var grupoDimensiones = Model.Dimensiones.GroupBy(p => p.IdTipoAmbiente);
+                                foreach (var unGrupo in grupoDimensiones)
+                                {
+                                    string dimensiones = string.Empty;
+                                    foreach (var dimension in unGrupo)
+                                    {
+                                        dimensiones += string.Concat(dimension.Ancho, "x", dimension.Largo, (dimension.Descripcion != string.Empty) ? string.Format(" {0}", dimension.Descripcion) : "", " | ");
+                                    }
+                                    string tipoAmbiente = (unGrupo.Count() > 1) ? string.Concat(unGrupo.First().TipoAmbiente.Descripcion, "s") : unGrupo.First().TipoAmbiente.Descripcion;
+                                    string cantAmbientes = string.Format("[{0}]:", unGrupo.Count().ToString());
+                                    <p>@tipoAmbiente @cantAmbientes @dimensiones</p>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <!-- End description area  -->
+
+                    <div class="section additional-details">
+                        <h4 class="s-property-title">@DetallePropiedad.Secciones.DetallesAdicionales </h4>
+                        <ul class="additional-details-list clearfix">
+                            <li>
+                                <span class="col-xs-6 col-sm-4 col-md-4 add-d-title">@DetallePropiedad.Campos.CantidadAmbientes </span>
+                                <span class="col-xs-6 col-sm-8 col-md-8 add-d-entry">@Model.CantidadAmbientes</span>
+                            </li>
+                            <li>
+                                <span class="col-xs-6 col-sm-4 col-md-4 add-d-title">@DetallePropiedad.Campos.CantidadDormitorios </span>
+                                <span class="col-xs-6 col-sm-8 col-md-8 add-d-entry">@Model.CantidadDormitorios</span>
+                            </li>
+                            <li>
+                                <span class="col-xs-6 col-sm-4 col-md-4 add-d-title">@DetallePropiedad.Campos.CantidadBaños</span>
+                                <span class="col-xs-6 col-sm-8 col-md-8 add-d-entry">@Model.CantidadSanitarios</span>
+                            </li>
+                            <li>
+                                <span class="col-xs-6 col-sm-4 col-md-4 add-d-title">@DetallePropiedad.Campos.Antiguedad</span>
+                                <span class="col-xs-6 col-sm-8 col-md-8 add-d-entry">@Model.Antiguedad</span>
+                            </li>
+                            <li>
+                                <span class="col-xs-6 col-sm-4 col-md-4 add-d-title">@DetallePropiedad.Campos.CantidadDptosPorPiso</span>
+                                <span class="col-xs-6 col-sm-8 col-md-8 add-d-entry">@Model.CantidadPorPiso</span>
+                            </li>
+                            <li>
+                                <span class="col-xs-6 col-sm-4 col-md-4 add-d-title">@DetallePropiedad.Campos.MetrosTotales</span>
+                                <span class="col-xs-6 col-sm-8 col-md-8 add-d-entry">@Model.MetrosTotales</span>
+                            </li>
+                            <li>
+                                <span class="col-xs-6 col-sm-4 col-md-4 add-d-title">@DetallePropiedad.Campos.MetrosCubiertos</span>
+                                <span class="col-xs-6 col-sm-8 col-md-8 add-d-entry">@Model.MetrosCubiertos</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- End additional-details area  -->
+
+                    <div class="section property-features">
+                        <h4 class="s-property-title">@DetallePropiedad.Secciones.ServiciosComodidades </h4>
+                        <ul>
+                            @if (Model.Servicios.Agua)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.Agua</a></li>}
+
+                            @if (Model.Servicios.Gas)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.Gas</a></li>}
+
+                            @if (Model.Servicios.Cloaca)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.Cloaca</a></li>}
+
+                                @if (Model.Servicios.CalderaIndividual)
+                                {<li><a>@DetallePropiedad.Campos.Servicios.Caldera</a></li>}
+
+                            @if (Model.Servicios.AireAcondicionado)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.AireAcond</a></li>}
+
+                            @if (Model.Servicios.ServicioSeguridad)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.ServicioSeg</a></li>}
+
+                            @if (Model.Servicios.Telefono)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.Telefono</a></li>}
+
+                            @if (Model.Servicios.Internet)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.Internet</a></li>}
+
+                            @if (Model.Servicios.Luz)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.Luz</a></li>}
+
+                            @if (Model.Servicios.PorteroElectrico)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.PorteroElectrico</a></li>}
+
+                            @if (Model.Servicios.TV)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.Tv</a></li>}
+
+                            @if (Model.Servicios.Termotanque)
+                            {<li><a>@DetallePropiedad.Campos.Servicios.Termotanque</a></li>}
+                        </ul>
+                    </div>
+                    <!-- End features area  -->
+
+                    @if (!string.IsNullOrEmpty(Model.URLVideo))
+                    {
+                    <div class="section property-video">
+                        <h4 class="s-property-title">@DetallePropiedad.Secciones.Video </h4>
+                        <div class="video-thumb">
+                            <a class="video-popup" href="yout" title="Virtual Tour">
+                                @*<img src="images/property-video.jpg" class="img-responsive wp-post-image" alt="Exterior">*@
+                                <iframe class="wp-post-image" width="730" height="365" src="@Model.URLVideo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>	
+                            </a>
+                        </div>
+                    </div>
+                    }
+                    <!-- End video area  -->
+
+                    <div class="section property-share">
+                        <h4 class="s-property-title">@DetallePropiedad.Secciones.CompartirAmigos </h4>
+                        <div class="roperty-social">
+                            <ul>
+                                <li><a title="Compartir en facebok " href="#"><img src="images/social_big/facebook_grey.png"></a></li>
+                                <li><a title="Compartir en linkedin " href="#"><img src="images/social_big/linkedin_grey.png"></a></li>
+                                <li><a title="Compartir en twitter " href="#"><img src="images/social_big/twitter_grey.png"></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- End share social area  -->
+
+                </div>
+            </div>
+
+            <div class="col-md-4 p0">
+                <aside class="sidebar sidebar-property blog-asside-right property-style2">
+                    <div class="dealer-widget">
+                        <div class="dealer-content">
+                            <div class="inner-wrapper">
+                                <div class="single-property-header">
+                                    <h1 class="property-title">@Model.Titulo</h1>
+                                    <span class="property-price">@sSimboloMoneda @Model.Precio</span>
+                                </div>
+                                <div class="property-meta entry-meta clearfix ">
+                                    <div class="col-xs-5 col-sm-5 col-md-5 p-b-15">
+                                        <span class="property-info-icon icon-tag">
+                                            <img src="@sPathImgTipoAviso">
+                                        </span>
+                                        <span class="property-info-entry">
+                                            <span class="property-info-label">Operacion</span>
+                                            <span class="property-info-value">@sTipoAviso</span>
+                                        </span>
+                                    </div>
+                                    <div class="col-xs-5 col-sm-5 col-md-5 p-b-15">
+                                        <span class="property-info icon-area">
+                                            <img src="../images/icon/room-ocean.png">
+                                        </span>
+                                        <span class="property-info-entry">
+                                            <span class="property-info-label">Mtrs Totales</span>
+                                            <span class="property-info-value">@Model.MetrosTotales <b class="property-info-unit">M<sup>2</sup></b></span>
+                                        </span>
+                                    </div>
+                                    <div class="col-xs-5 col-sm-5 col-md-5 p-b-15">
+                                        <span class="property-info-icon icon-bed">
+                                            <img src="../images/icon/bed-ocean.png">
+                                        </span>
+                                        <span class="property-info-entry">
+                                            <span class="property-info-label">Dormitorios</span>
+                                            <span class="property-info-value">@Model.CantidadDormitorios</span>
+                                        </span>
+                                    </div>
+                                    <div class="col-xs-5 col-sm-5 col-md-5 p-b-15">
+                                        <span class="property-info-icon icon-bath">
+                                            <img src="../images/icon/os-ocean.png">
+                                        </span>
+                                        <span class="property-info-entry">
+                                            <span class="property-info-label">Baños</span>
+                                            <span class="property-info-value">@Model.CantidadSanitarios</span>
+                                        </span>
+                                    </div>
+                                    <div class="col-xs-5 col-sm-5 col-md-5 p-b-15">
+                                        <span class="property-info-icon icon-garage">
+                                            <img src="../images/icon/cars-ocean.png">
+                                        </span>
+                                        <span class="property-info-entry">
+                                            <span class="property-info-label">Cocheras</span>
+                                            <span class="property-info-value">@Model.CantidadCocheras</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="dealer-section-space">
+                                    <span>@DetallePropiedad.Secciones.SaberMas </span>
+                                </div>
+                                <div class="clear">
+                                    <div class="input-group">
+                                        <input id="txtFromEmailInfoProp" class="form-control" type="text" placeholder="E-mail ... ">
+                                        <span class="input-group-btn">
+                                            <button id="SendEmailForPropertieInfo" class="btn btn-primary subscribe" type="button"><i class="pe-7s-paper-plane pe-2x"></i></button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="clear">
+                                    <ul class="dealer-contacts">
+                                        <li><i class="pe-7s-map-marker strong"> </i> Achaval 486 - Caballito - CABA</li>
+                                        <li><i class="pe-7s-mail strong"> </i> casanuevaprop@gmail.com</li>
+                                        <li><i class="pe-7s-call strong"> </i> 11-4431-7811 / 4433-6600</li>
+                                        <p>No dude en ponerse en contacto para recibir información sobre esta propiedad...</p>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script>
+			$(document).ready(function () {
+				$('#image-gallery').lightSlider({
+					gallery:true,
+					item:1,
+					loop:true,
+					thumbItem:9,
+					slideMargin:0,
+					enableDrag: false,
+					currentPagerPosition:'left',
+					onSliderLoad: function(el) {
+						el.lightGallery({
+							selector: '#image-gallery .lslide'
+						});
+					}
+				});
+            });
+    </script>
+}
